@@ -4,9 +4,9 @@ public class Solicitacao {
     private int numero;
     private String solicitante;
     private String descricao;
-    private Date dataSolicitacao;
+    private LocalDateTime dataSolicitacao;
 
-    public Solicitacao(int numero, String solicitante, String descricao, Date dataSolicitacao) {
+    public Solicitacao(int numero, String solicitante, String descricao, LocalDateTime dataSolicitacao) {
         this.numero = numero;
         this.solicitante = solicitante;
         this.descricao = descricao;
@@ -25,7 +25,7 @@ public class Solicitacao {
         return solicitante;
     }
 
-    public Date getDataSolicitacao() {
+    public LocalDateTime getDataSolicitacao() {
         return dataSolicitacao;
     }
 
@@ -41,7 +41,7 @@ public class Solicitacao {
         this.solicitante = solicitante;
     }
 
-    public void setDataSolicitacao(Date dataSolicitacao) {
+    public void setDataSolicitacao(LocalDateTime dataSolicitacao) {
         this.dataSolicitacao = dataSolicitacao;
     }
 }

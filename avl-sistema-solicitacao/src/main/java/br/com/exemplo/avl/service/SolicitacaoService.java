@@ -2,10 +2,11 @@ package br.com.exemplo.avl.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
 import org.springframework.stereotype.Service;
+
 import br.com.exemplo.avl.model.Solicitacao;
 import br.com.exemplo.avl.repository.SolicitacaoRepository;
-
 
 @Service
 public class SolicitacaoService {
@@ -16,8 +17,9 @@ public class SolicitacaoService {
     }
 
     public void cadastrar(int numero, String descricao, String solicitante) {
-        LocalDateTime dataSolicitacao = LocalDateTime.now();
-        repository.inserir(new Solicitacao(numero, descricao, solicitante, dataSolicitacao));
+        validarDados(solicitante, descricao);
+        LocalDateTime dataAbertura = LocalDateTime.now();
+        repository.inserir(new Solicitacao(numero, solicitante, descricao, dataAbertura));
     }
 
     public Solicitacao buscar(int numero) {
@@ -29,7 +31,17 @@ public class SolicitacaoService {
     }
 
     public boolean alterar(int numero, String solicitante, String descricao) {
+        validarDados(solicitante, descricao);
         return repository.alterar(numero, solicitante, descricao);
+    }
+
+    private void validarDados(String solicitante, String descricao) {
+        if (solicitante == null || solicitante.trim().isEmpty()) {
+            throw new IllegalArgumentException("Informe o nome do solicitante.");
+        }
+        if (descricao == null || descricao.trim().isEmpty()) {
+            throw new IllegalArgumentException("Informe a descrição da solicitação.");
+        }
     }
 
     public List<Solicitacao> listar() {

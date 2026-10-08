@@ -6,13 +6,13 @@ public class Solicitacao {
     private int numero;
     private String solicitante;
     private String descricao;
-    private LocalDateTime dataSolicitacao;
+    private LocalDateTime dataAbertura;
 
-    public Solicitacao(int numero, String solicitante, String descricao, LocalDateTime dataSolicitacao) {
+    public Solicitacao(int numero, String solicitante, String descricao, LocalDateTime dataAbertura) {
         this.numero = numero;
         this.solicitante = solicitante;
         this.descricao = descricao;
-        this.dataSolicitacao = dataSolicitacao;
+        this.dataAbertura = dataAbertura;
     }
 
     public int getNumero() {
@@ -27,8 +27,8 @@ public class Solicitacao {
         return solicitante;
     }
 
-    public LocalDateTime getDataSolicitacao() {
-        return dataSolicitacao;
+    public LocalDateTime getDataAbertura() {
+        return dataAbertura;
     }
 
     public void setNumero(int numero) {
@@ -43,7 +43,7 @@ public class Solicitacao {
         this.solicitante = solicitante;
     }
 
-    public void setDataSolicitacao(LocalDateTime dataSolicitacao) {
-        this.dataSolicitacao = dataSolicitacao;
+    public void setDataAbertura(LocalDateTime dataAbertura) {
+        this.dataAbertura = dataAbertura;
     }
 }

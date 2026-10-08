@@ -32,12 +32,12 @@
                             <input id="numero" type="number" class="form-control" required>
                         </div>
                         <div class="mb-3">
-                            <label for="descricao" class="form-label">Descrição</label>
-                            <input id="descricao" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
                             <label for="solicitante" class="form-label">Solicitante</label>
                             <input id="solicitante" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label">Descrição</label>
+                            <input id="descricao" class="form-control" required>
                         </div>
                         <button class="btn btn-primary w-100">Inserir na AVL</button>
                     </form>
@@ -48,28 +48,6 @@
                 </div>
             </div>
         </div>
-
-        <div class="card mt-4">
-        <div class="card-body">
-            <h5 class="card-title">Alterar solicitação</h5>
-
-            <input id="numeroEdicao" type="hidden">
-
-            <div class="mb-3">
-                <label for="solicitanteEdicao" class="form-label">Solicitante</label>
-                <input id="solicitanteEdicao" class="form-control" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="descricaoEdicao" class="form-label">Descrição</label>
-                <input id="descricaoEdicao" class="form-control" required>
-            </div>
-
-            <button id="btnSalvarAlteracao" class="btn btn-warning w-100">
-                Salvar alteração
-            </button>
-        </div>
-    </div>
 
         <div class="col-lg-8">
             <div class="card">
@@ -93,9 +71,9 @@
                     <thead>
                         <tr>
                             <th>Número</th>
-                            <th>Descrição</th>
                             <th>Solicitante</th>
-                            <th>Data da criação</th>
+                            <th>Data de abertura</th>
+                            <th>Descrição</th>
                             <th class="text-end">Ações</th>
                         </tr>
                     </thead>
@@ -117,6 +95,44 @@
     </div>
 </div>
 
+<div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarTitulo" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalEditarTitulo">Alterar solicitação</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <input id="numeroEdicao" type="hidden">
+
+                <div class="mb-3">
+                    <label for="numeroEdicaoReadOnly" class="form-label">Número</label>
+                    <input id="numeroEdicaoReadOnly" class="form-control" readonly>
+                </div>
+
+                <div class="mb-3">
+                    <label for="dataEdicao" class="form-label">Data de abertura</label>
+                    <input id="dataEdicao" class="form-control" readonly>
+                </div>
+
+                <div class="mb-3">
+                    <label for="solicitanteEdicao" class="form-label">Solicitante</label>
+                    <input id="solicitanteEdicao" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="descricaoEdicao" class="form-label">Descrição</label>
+                    <textarea id="descricaoEdicao" class="form-control" rows="3" required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button id="btnSalvarAlteracao" type="button" class="btn btn-warning">Salvar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 const API = '/solicitacoes';
@@ -128,6 +144,25 @@ function mostrarToast(titulo, mensagem) {
     const elemento = document.getElementById('toastNotificacao');
     const toast = bootstrap.Toast.getOrCreateInstance(elemento, { delay: 3000 });
     toast.show();
+}
+
+function formatarData(dataIso) {
+    if (!dataIso) {
+        return '';
+    }
+
+    const data = new Date(dataIso);
+    if (Number.isNaN(data.getTime())) {
+        return dataIso;
+    }
+
+    const dia = String(data.getDate()).padStart(2, '0');
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const ano = data.getFullYear();
+    const hora = String(data.getHours()).padStart(2, '0');
+    const minuto = String(data.getMinutes()).padStart(2, '0');
+
+    return `${dia}/${mes}/${ano} ${hora}:${minuto}`;
 }
 
 async function lerJsonSeguro(resposta) {
@@ -158,15 +193,15 @@ async function atualizar() {
             ? lista.map(s => `
                 <tr>
                     <td><strong>${s.numero}</strong></td>
-                    <td>${s.descricao}</td>
                     <td>${s.solicitante}</td>
-                    <td>${s.dataSolicitacao}</td>
+                    <td>${formatarData(s.dataAbertura)}</td>
+                    <td>${s.descricao}</td>
                     <td class="text-end">
+                        <button class="btn btn-sm btn-outline-warning me-2" onclick='editar(${s.numero}, ${JSON.stringify(s.solicitante)}, ${JSON.stringify(s.descricao)}, ${JSON.stringify(s.dataAbertura)})'>
+                            Editar
+                        </button>
                         <button class="btn btn-sm btn-outline-danger" onclick="remover(${s.numero})">
                             Remover
-                        </button>
-                        <button class="btn btn-sm btn-outline-warning" onclick="editar(${s.numero}, '${s.solicitante}', '${s.descricao}')">
-                            Alterar
                         </button>
                     </td>
                 </tr>`).join('')
@@ -180,7 +215,7 @@ async function inserir(numero, descricao, solicitante, silencioso = false) {
     const resposta = await fetch(API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ numero, descricao, solicitante })
+        body: JSON.stringify({ numero, solicitante, descricao })
     });
 
     const dados = await lerJsonSeguro(resposta);
@@ -211,22 +246,27 @@ async function remover(numero) {
     }
 }
 
-function editar(numero, solicitante, descricao) {
+function editar(numero, solicitante, descricao, dataAbertura) {
+    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditar'));
     document.getElementById('numeroEdicao').value = numero;
+    document.getElementById('numeroEdicaoReadOnly').value = numero;
+    document.getElementById('dataEdicao').value = formatarData(dataAbertura);
     document.getElementById('solicitanteEdicao').value = solicitante;
     document.getElementById('descricaoEdicao').value = descricao;
+    modal.show();
 }
 
 async function alterar() {
-        const numero = Number(document.getElementById('numeroEdicao').value);
-        const solicitante = document.getElementById('solicitanteEdicao').value.trim();
-        const descricao = document.getElementById('descricaoEdicao').value.trim();
+    const numero = Number(document.getElementById('numeroEdicao').value);
+    const solicitante = document.getElementById('solicitanteEdicao').value.trim();
+    const descricao = document.getElementById('descricaoEdicao').value.trim();
 
-        if (!numero || !solicitante || !descricao) {
-            mostrarToast('Atenção', 'Preencha solicitante e descrição.');
-            return;
-        }
+    if (!numero || !solicitante || !descricao) {
+        mostrarToast('Atenção', 'Informe o solicitante e a descrição da solicitação.');
+        return;
+    }
 
+    try {
         const resposta = await fetch(`${API}/${numero}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -240,21 +280,24 @@ async function alterar() {
             return;
         }
 
+        const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditar'));
+        modal.hide();
         mostrarToast('Sucesso', dados.mensagem);
         await atualizar();
-
-        document.getElementById('btnSalvarAlteracao').addEventListener('click', alterar);
+    } catch (erro) {
+        mostrarToast('Erro', 'Não foi possível comunicar com o servidor.');
+    }
 }
 
 document.getElementById('formCadastro').addEventListener('submit', async (evento) => {
     evento.preventDefault();
 
     const numero = Number(document.getElementById('numero').value);
-    const descricao = document.getElementById('descricao').value.trim();
     const solicitante = document.getElementById('solicitante').value.trim();
+    const descricao = document.getElementById('descricao').value.trim();
 
-    if (!numero || !descricao || !solicitante) {
-        mostrarToast('Atenção', 'Preencha todos os campos.');
+    if (!numero || !solicitante || !descricao) {
+        mostrarToast('Atenção', 'Preencha número, solicitante e descrição.');
         return;
     }
 
@@ -268,26 +311,27 @@ document.getElementById('formCadastro').addEventListener('submit', async (evento
     }
 });
 
+document.getElementById('btnSalvarAlteracao').addEventListener('click', alterar);
 document.getElementById('atualizar').addEventListener('click', atualizar);
 
 document.getElementById('carregarExemplo').addEventListener('click', async () => {
     const dados = [
-        [50, 'Problema no servidor'],
-        [30, 'Computador não inicia'],
-        [70, 'Falha de conexão'],
-        [20, 'Impressora não funciona'],
-        [40, 'Erro no sistema'],
-        [60, 'Problema de acesso'],
-        [80, 'Troca de equipamento'],
-        [10, 'Instalação de software'],
-        [25, 'Configuração de usuário']
+        [50, 'Paulo Lima', 'Problema no servidor'],
+        [30, 'Carlos Souza', 'Computador não inicia'],
+        [70, 'Ana Costa', 'Falha de conexão'],
+        [20, 'João Oliveira', 'Impressora não funciona'],
+        [40, 'Marina Rocha', 'Erro no sistema'],
+        [60, 'Rafael Dias', 'Problema de acesso'],
+        [80, 'Larissa Mendes', 'Troca de equipamento'],
+        [10, 'Bruno Silva', 'Instalação de software'],
+        [25, 'Nina Alves', 'Configuração de usuário']
     ];
 
     let inseridos = 0;
 
-    for (const [numero, descricao] of dados) {
+    for (const [numero, solicitante, descricao] of dados) {
         try {
-            await inserir(numero, descricao, 'Exemplo', true);
+            await inserir(numero, descricao, solicitante, true);
             inseridos++;
         } catch {
             // Registros já existentes são ignorados ao carregar o exemplo.

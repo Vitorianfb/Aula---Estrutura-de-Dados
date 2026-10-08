@@ -1,5 +1,7 @@
 package br.com.exemplo.avl.model;
 
+import java.time.LocalDateTime;
+
 public class Solicitacao {
     private int numero;
     private String solicitante;

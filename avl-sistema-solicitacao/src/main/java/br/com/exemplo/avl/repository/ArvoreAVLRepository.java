@@ -108,6 +108,22 @@ public class ArvoreAVLRepository implements SolicitacaoRepository {
         return balancear(n);
     }
 
+    @Override
+    public boolean alterar(int numero, String solicitante, String descricao) {
+        NoAVL atual = raiz;
+
+        while (atual != null) {
+            if (numero == atual.solicitacao.getNumero()) {
+                atual.solicitacao.setSolicitante(solicitante);
+                atual.solicitacao.setDescricao(descricao);
+                return true;
+            }
+            atual = numero < atual.solicitacao.getNumero() ? atual.esquerda : atual.direita;
+        }
+
+        return false;
+    }
+
     private NoAVL menor(NoAVL n) {
         while (n.esquerda != null)
             n = n.esquerda;

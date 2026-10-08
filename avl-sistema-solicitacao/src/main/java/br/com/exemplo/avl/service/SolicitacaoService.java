@@ -28,6 +28,10 @@ public class SolicitacaoService {
         return repository.remover(numero);
     }
 
+    public boolean alterar(int numero, String solicitante, String descricao) {
+        return repository.alterar(numero, solicitante, descricao);
+    }
+
     public List<Solicitacao> listar() {
         return repository.listar();
     }

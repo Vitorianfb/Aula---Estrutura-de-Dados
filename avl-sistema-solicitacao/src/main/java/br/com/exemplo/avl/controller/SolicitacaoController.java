@@ -67,6 +67,20 @@ public class SolicitacaoController {
                 new ApiResponse(true, "Solicitação " + numero + " removida com sucesso."));
     }
 
+    @PutMapping("/{numero}")
+    public ResponseEntity<ApiResponse> alterar(
+        @PathVariable int numero,
+        @RequestBody AtualizarSolicitacaoRequest request) {
+
+        if (!service.alterar(numero, request.getSolicitante(), request.getDescricao())) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse(false, "Solicitação não encontrada."));
+        }
+
+        return ResponseEntity.ok(
+                new ApiResponse(true, "Solicitação " + numero + " alterada com sucesso."));
+    }
+
     @GetMapping(value = "/arvore", produces = MediaType.TEXT_PLAIN_VALUE)
     public String arvore() {
         return service.exibirArvore();

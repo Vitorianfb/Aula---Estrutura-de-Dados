@@ -49,6 +49,28 @@
             </div>
         </div>
 
+        <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">Alterar solicitação</h5>
+
+            <input id="numeroEdicao" type="hidden">
+
+            <div class="mb-3">
+                <label for="solicitanteEdicao" class="form-label">Solicitante</label>
+                <input id="solicitanteEdicao" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="descricaoEdicao" class="form-label">Descrição</label>
+                <input id="descricaoEdicao" class="form-control" required>
+            </div>
+
+            <button id="btnSalvarAlteracao" class="btn btn-warning w-100">
+                Salvar alteração
+            </button>
+        </div>
+    </div>
+
         <div class="col-lg-8">
             <div class="card">
                 <div class="card-body">
@@ -143,6 +165,9 @@ async function atualizar() {
                         <button class="btn btn-sm btn-outline-danger" onclick="remover(${s.numero})">
                             Remover
                         </button>
+                        <button class="btn btn-sm btn-outline-warning" onclick="editar(${s.numero}, '${s.solicitante}', '${s.descricao}')">
+                            Alterar
+                        </button>
                     </td>
                 </tr>`).join('')
             : '<tr><td colspan="5" class="text-center text-muted">Nenhuma solicitação cadastrada.</td></tr>';
@@ -184,6 +209,41 @@ async function remover(numero) {
     } catch (erro) {
         mostrarToast('Erro', 'Não foi possível comunicar com o servidor.');
     }
+}
+
+function editar(numero, solicitante, descricao) {
+    document.getElementById('numeroEdicao').value = numero;
+    document.getElementById('solicitanteEdicao').value = solicitante;
+    document.getElementById('descricaoEdicao').value = descricao;
+}
+
+async function alterar() {
+        const numero = Number(document.getElementById('numeroEdicao').value);
+        const solicitante = document.getElementById('solicitanteEdicao').value.trim();
+        const descricao = document.getElementById('descricaoEdicao').value.trim();
+
+        if (!numero || !solicitante || !descricao) {
+            mostrarToast('Atenção', 'Preencha solicitante e descrição.');
+            return;
+        }
+
+        const resposta = await fetch(`${API}/${numero}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ solicitante, descricao })
+        });
+
+        const dados = await lerJsonSeguro(resposta);
+
+        if (!resposta.ok) {
+            mostrarToast('Erro', dados.mensagem || 'Não foi possível alterar.');
+            return;
+        }
+
+        mostrarToast('Sucesso', dados.mensagem);
+        await atualizar();
+
+        document.getElementById('btnSalvarAlteracao').addEventListener('click', alterar);
 }
 
 document.getElementById('formCadastro').addEventListener('submit', async (evento) => {

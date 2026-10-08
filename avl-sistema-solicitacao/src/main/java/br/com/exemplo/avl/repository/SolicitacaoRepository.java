@@ -10,6 +10,8 @@ public interface SolicitacaoRepository {
 
     boolean remover(int numero);
 
+    boolean alterar(int numero, String solicitante, String descricao);
+
     List<Solicitacao> listar();
 
     String exibirArvore();

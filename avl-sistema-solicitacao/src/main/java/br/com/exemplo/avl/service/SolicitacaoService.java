@@ -13,8 +13,9 @@ public class SolicitacaoService {
         this.repository = repository;
     }
 
-    public void cadastrar(int numero, String descricao) {
-        repository.inserir(new Solicitacao(numero, descricao));
+    public void cadastrar(int numero, String descricao, String solicitante) {
+        LocalDateTime dataSolicitacao = LocalDateTime.now();
+        repository.inserir(new Solicitacao(numero, descricao, solicitante, dataSolicitacao));
     }
 
     public Solicitacao buscar(int numero) {

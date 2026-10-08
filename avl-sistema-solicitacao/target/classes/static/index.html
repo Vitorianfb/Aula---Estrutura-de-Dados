@@ -35,6 +35,10 @@
                             <label for="descricao" class="form-label">Descrição</label>
                             <input id="descricao" class="form-control" required>
                         </div>
+                        <div class="mb-3">
+                            <label for="solicitante" class="form-label">Solicitante</label>
+                            <input id="solicitante" class="form-control" required>
+                        </div>
                         <button class="btn btn-primary w-100">Inserir na AVL</button>
                     </form>
                     <hr>
@@ -68,6 +72,8 @@
                         <tr>
                             <th>Número</th>
                             <th>Descrição</th>
+                            <th>Solicitante</th>
+                            <th>Data da criação</th>
                             <th class="text-end">Ações</th>
                         </tr>
                     </thead>
@@ -131,23 +137,25 @@ async function atualizar() {
                 <tr>
                     <td><strong>${s.numero}</strong></td>
                     <td>${s.descricao}</td>
+                    <td>${s.solicitante}</td>
+                    <td>${s.dataSolicitacao}</td>
                     <td class="text-end">
                         <button class="btn btn-sm btn-outline-danger" onclick="remover(${s.numero})">
                             Remover
                         </button>
                     </td>
                 </tr>`).join('')
-            : '<tr><td colspan="3" class="text-center text-muted">Nenhuma solicitação cadastrada.</td></tr>';
+            : '<tr><td colspan="5" class="text-center text-muted">Nenhuma solicitação cadastrada.</td></tr>';
     } catch (erro) {
         mostrarToast('Erro', 'Não foi possível acessar a API. Verifique se o Spring Boot está executando.');
     }
 }
 
-async function inserir(numero, descricao, silencioso = false) {
+async function inserir(numero, descricao, solicitante, silencioso = false) {
     const resposta = await fetch(API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ numero, descricao })
+        body: JSON.stringify({ numero, descricao, solicitante })
     });
 
     const dados = await lerJsonSeguro(resposta);
@@ -183,14 +191,15 @@ document.getElementById('formCadastro').addEventListener('submit', async (evento
 
     const numero = Number(document.getElementById('numero').value);
     const descricao = document.getElementById('descricao').value.trim();
+    const solicitante = document.getElementById('solicitante').value.trim();
 
-    if (!numero || !descricao) {
-        mostrarToast('Atenção', 'Preencha o número e a descrição.');
+    if (!numero || !descricao || !solicitante) {
+        mostrarToast('Atenção', 'Preencha todos os campos.');
         return;
     }
 
     try {
-        await inserir(numero, descricao);
+        await inserir(numero, descricao, solicitante);
         evento.target.reset();
         document.getElementById('numero').focus();
         await atualizar();
@@ -218,7 +227,7 @@ document.getElementById('carregarExemplo').addEventListener('click', async () =>
 
     for (const [numero, descricao] of dados) {
         try {
-            await inserir(numero, descricao, true);
+            await inserir(numero, descricao, 'Exemplo', true);
             inseridos++;
         } catch {
             // Registros já existentes são ignorados ao carregar o exemplo.
